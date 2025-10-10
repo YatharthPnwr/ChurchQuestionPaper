@@ -1,0 +1,101 @@
+@import "tailwindcss";
+
+:root {
+  --background: #ffffff;
+  --foreground: #171717;
+}
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --background: #0a0a0a;
+    --foreground: #ededed;
+  }
+}
+
+/* Print Styles */
+@media print {
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  .no-print {
+    display: none !important;
+  }
+
+  .print-full-width {
+    width: 100% !important;
+    max-width: none !important;
+  }
+
+  .print-page {
+    page-break-inside: avoid;
+  }
+
+  .print-break-before {
+    page-break-before: always;
+  }
+
+  .print-break-after {
+    page-break-after: always;
+  }
+}
+
+/* Custom Question Paper Styling */
+.question-paper {
+  font-family: "Times New Roman", serif;
+  line-height: 1.6;
+}
+
+.question-paper h1,
+.question-paper h2,
+.question-paper h3 {
+  font-weight: bold;
+}
+
+.question-paper .question-number {
+  font-weight: bold;
+  margin-right: 0.5rem;
+}
+
+.question-paper .option-letter {
+  font-weight: bold;
+  margin-right: 0.5rem;
+  min-width: 1.5rem;
+  white-space: nowrap;
+}
+
+/* Horizontal options layout */
+.question-paper .options-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem 2rem;
+  align-items: flex-start;
+}
+
+.question-paper .option-item {
+  display: inline-flex;
+  align-items: flex-start;
+  min-width: fit-content;
+  max-width: calc(50% - 1rem);
+  word-wrap: break-word;
+}
+
+.question-paper .marks-box {
+  border: 1px solid black;
+  padding: 0.25rem 0.5rem;
+  background-color: white;
+}
+
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: Arial, Helvetica, sans-serif;
+}
