@@ -502,7 +502,7 @@ export default function MCQGenerator() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Institution/School Name
+                Top Text (e.g., "Praise the Lord!")
               </label>
               <input
                 type="text"
@@ -510,14 +510,14 @@ export default function MCQGenerator() {
                 onChange={(e) =>
                   setPaperHeader((prev) => ({ ...prev, title: e.target.value }))
                 }
-                placeholder="e.g., St. Mary's High School"
+                placeholder="e.g., Praise the Lord!"
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-slate-900"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Class/Grade
+                Standard/Class (e.g., "STANDARD 3")
               </label>
               <input
                 type="text"
@@ -528,14 +528,14 @@ export default function MCQGenerator() {
                     className: e.target.value,
                   }))
                 }
-                placeholder="e.g., Class 10"
+                placeholder="e.g., STANDARD 3"
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-slate-900"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Subject
+                Exam Title (e.g., "ANNUAL EXAMINATION – 2021")
               </label>
               <input
                 type="text"
@@ -546,29 +546,14 @@ export default function MCQGenerator() {
                     subject: e.target.value,
                   }))
                 }
-                placeholder="e.g., English"
+                placeholder="e.g., ANNUAL EXAMINATION – 2021"
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-slate-900"
               />
             </div>
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Date
-              </label>
-              <input
-                type="text"
-                value={paperHeader.date}
-                onChange={(e) =>
-                  setPaperHeader((prev) => ({ ...prev, date: e.target.value }))
-                }
-                placeholder="e.g., March 15, 2024"
-                className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-slate-900"
-              />
-            </div>
-
-            <div>
-              <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Time Duration
+                Time Duration (e.g., "1½ Hours")
               </label>
               <input
                 type="text"
@@ -576,7 +561,7 @@ export default function MCQGenerator() {
                 onChange={(e) =>
                   setPaperHeader((prev) => ({ ...prev, time: e.target.value }))
                 }
-                placeholder="e.g., 3 Hours"
+                placeholder="e.g., 1½ Hours"
                 className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent transition-all duration-200 text-slate-900"
               />
             </div>
@@ -1539,41 +1524,36 @@ export default function MCQGenerator() {
         <div className="question-paper bg-white border-2 border-gray-200 p-8 min-h-[600px] text-black print:border-none print:p-6 print:shadow-none">
           {/* Paper Header */}
           {(paperHeader.title || paperHeader.subject) && (
-            <div className="text-center mb-8 print:mb-6 border-b-2 border-black pb-4 print:pb-3">
+            <div className="text-center mb-6 print:mb-4">
               {paperHeader.title && (
-                <h1 className="text-2xl font-bold mb-2 print:text-xl">
+                <div className="italic text-base mb-1 print:text-sm">
                   {paperHeader.title}
-                </h1>
+                </div>
               )}
-              {(paperHeader.className || paperHeader.subject) && (
-                <h2 className="text-xl font-bold mb-3 print:text-lg">
-                  {paperHeader.className && paperHeader.subject
-                    ? `${paperHeader.className} - ${paperHeader.subject}`
-                    : paperHeader.className || paperHeader.subject}
-                </h2>
+              <h1 className="text-xl font-bold mb-1 print:text-lg uppercase">
+                THE PENTECOSTAL MISSION
+              </h1>
+              <h2 className="text-base font-bold mb-1 print:text-sm uppercase">
+                SUNDAY SCHOOL CENTRAL ORGANIZATION, BARODA
+              </h2>
+              {paperHeader.subject && (
+                <h3 className="text-base font-bold mb-4 print:text-sm uppercase underline">
+                  {paperHeader.subject}
+                </h3>
               )}
-              <div className="flex justify-between items-center text-sm print:text-xs">
-                <div className="space-y-1">
-                  {paperHeader.date && (
-                    <div>
-                      <strong>Date:</strong> {paperHeader.date}
-                    </div>
-                  )}
-                  {paperHeader.time && (
-                    <div>
-                      <strong>Time:</strong> {paperHeader.time}
-                    </div>
+              <div className="flex justify-between items-center text-sm print:text-xs font-bold pt-3">
+                <div>
+                  {paperHeader.time && <span>Time : {paperHeader.time}</span>}
+                </div>
+                <div>
+                  {paperHeader.className && (
+                    <span className="uppercase">{paperHeader.className}</span>
                   )}
                 </div>
-                <div className="space-y-1 text-right">
+                <div>
                   {paperHeader.maxMarks && (
-                    <div>
-                      <strong>Max. Marks:</strong> {paperHeader.maxMarks}
-                    </div>
+                    <span>Marks : {paperHeader.maxMarks}</span>
                   )}
-                  <div>
-                    <strong>Name:</strong> _____________________
-                  </div>
                 </div>
               </div>
             </div>
@@ -1588,8 +1568,8 @@ export default function MCQGenerator() {
 
               return (
                 <div key={section.id}>
-                  <div className="mb-8 print:mb-6">
-                    <div className="flex justify-between items-start mb-4">
+                  <div className="mb-3 print:mb-2">
+                    <div className="flex justify-between items-start mb-1">
                       <h3 className="text-xl font-bold text-black print:text-lg">
                         {section.sectionNumber && `${section.sectionNumber}. `}
                         {section.heading}
@@ -1608,31 +1588,33 @@ export default function MCQGenerator() {
                       {section.questions.map((question, index) => (
                         <div
                           key={question.id}
-                          className="print-page space-y-0.5 print:space-y-0.5"
+                          className="print-page space-y-0 print:space-y-0 mcq-question"
                         >
                           {question.question && (
-                            <div className="text-black leading-relaxed print:leading-normal">
-                              <span className="question-number">
+                            <div className="text-black leading-relaxed print:leading-normal mcq-question flex">
+                              <span className="question-number flex-shrink-0">
                                 {index + 1}.
                               </span>
-                              {question.question}
+                              <span className="flex-1">
+                                {question.question}
+                              </span>
                             </div>
                           )}
 
                           {question.options.some((opt) => opt.trim()) && (
-                            <div className="ml-6 print:ml-4 flex flex-wrap gap-x-8 gap-y-2 items-start">
+                            <div className="ml-6 print:ml-4 flex flex-wrap gap-x-8 gap-y-0.5 items-start">
                               {question.options.map(
                                 (option, optionIndex) =>
                                   option.trim() && (
                                     <div
                                       key={optionIndex}
-                                      className="flex items-start min-w-fit max-w-[calc(50%-1rem)]"
+                                      className="flex items-start min-w-fit max-w-[calc(50%-1rem)] mcq-question"
                                     >
                                       <span className="option-letter text-black font-bold whitespace-nowrap">
                                         ({String.fromCharCode(97 + optionIndex)}
                                         )
                                       </span>
-                                      <span className="flex-1 text-black leading-relaxed print:leading-normal ml-2 break-words">
+                                      <span className="flex-1 text-black leading-relaxed print:leading-normal ml-2 break-words option-text">
                                         {option}
                                       </span>
                                     </div>
@@ -1654,8 +1636,8 @@ export default function MCQGenerator() {
               if (!section) return null;
 
               return (
-                <div key={section.id} className="mb-8 print:mb-6">
-                  <div className="flex justify-between items-start mb-4">
+                <div key={section.id} className="mb-3 print:mb-2">
+                  <div className="flex justify-between items-start mb-1">
                     <h3 className="text-xl font-bold text-black print:text-lg">
                       {section.sectionNumber && `${section.sectionNumber}. `}
                       {section.heading}
@@ -1673,11 +1655,13 @@ export default function MCQGenerator() {
                       {section.questions.map((question, index) => (
                         <div key={question.id}>
                           {question.question && (
-                            <div className="text-black leading-relaxed print:leading-normal">
-                              <span className="question-number">
+                            <div className="text-black leading-relaxed print:leading-normal flex">
+                              <span className="question-number flex-shrink-0">
                                 {index + 1}.
-                              </span>{" "}
-                              {question.question}
+                              </span>
+                              <span className="flex-1">
+                                {question.question}
+                              </span>
                             </div>
                           )}
                         </div>
@@ -1694,8 +1678,8 @@ export default function MCQGenerator() {
               if (!section) return null;
 
               return (
-                <div key={section.id} className="mb-8 print:mb-6">
-                  <div className="flex justify-between items-start mb-4">
+                <div key={section.id} className="mb-3 print:mb-2">
+                  <div className="flex justify-between items-start mb-1">
                     <h3 className="text-xl font-bold text-black print:text-lg">
                       {section.sectionNumber && `${section.sectionNumber}. `}
                       {section.heading}
@@ -1717,12 +1701,12 @@ export default function MCQGenerator() {
                               {index + 1}.
                             </span>
                           </div>
-                          <div className="flex-1 grid grid-cols-[1fr_auto_1fr] gap-4 items-start">
+                          <div className="flex-1 grid grid-cols-[1fr_auto_1fr] gap-8 items-start">
                             <div className="text-black leading-relaxed print:leading-normal">
                               {pair.leftItem}
                             </div>
-                            <div className="text-black font-bold px-2">-</div>
-                            <div className="text-black leading-relaxed print:leading-normal">
+                            <div className="text-black font-bold px-4">-</div>
+                            <div className="text-black leading-relaxed print:leading-normal pl-8">
                               {pair.rightItem}
                             </div>
                           </div>

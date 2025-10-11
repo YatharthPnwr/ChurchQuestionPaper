@@ -65,6 +65,20 @@
   margin-right: 0.5rem;
 }
 
+/* MCQ specific styling - Cambria font at 12px */
+/* Note: PDF uses Times New Roman as jsPDF doesn't support Cambria directly */
+.mcq-question {
+  font-family: Cambria, "Times New Roman", serif;
+  font-size: 12px !important;
+  line-height: 1.4;
+}
+
+.mcq-question .option-letter,
+.mcq-question .option-text {
+  font-family: Cambria, "Times New Roman", serif;
+  font-size: 12px !important;
+}
+
 .question-paper .option-letter {
   font-weight: bold;
   margin-right: 0.5rem;

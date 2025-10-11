@@ -1,6 +1,6 @@
 "use client";
 import MCQGenerator from "./components/MCQGenerator";
-import Instructions from "./components/Instructions";
+// import Instructions from "./components/Instructions";
 
 export default function Home() {
   return (
@@ -15,7 +15,7 @@ export default function Home() {
           </p>
         </header>
 
-        <Instructions />
+        {/* <Instructions /> */}
         <MCQGenerator />
       </div>
     </div>
