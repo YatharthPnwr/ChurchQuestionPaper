@@ -1,5 +1,4 @@
 import jsPDF from "jspdf";
-import html2canvas from "html2canvas";
 
 export interface QAQuestion {
   id: string;
@@ -268,31 +267,6 @@ export const generateAdvancedPDF = (paperData: PaperData) => {
     // Set font
     pdf.setFont("times", "normal");
 
-    // Helper function to add text with automatic page breaks
-    const addTextWithPageBreaks = (
-      text: string,
-      x: number,
-      y: number,
-      fontSize: number = 12,
-      isBold: boolean = false
-    ): number => {
-      pdf.setFontSize(fontSize);
-      pdf.setFont("times", isBold ? "bold" : "normal");
-
-      const lines = pdf.splitTextToSize(text, usableWidth - x + margin);
-
-      lines.forEach((line: string) => {
-        if (y > pageHeight - margin) {
-          pdf.addPage();
-          y = margin;
-        }
-        pdf.text(line, x, y);
-        y += fontSize * 0.5; // Line spacing
-      });
-
-      return y;
-    };
-
     // Paper Header
     if (paperData.header.title || paperData.header.subject) {
       // "Praise the Lord!" in italic
@@ -458,8 +432,6 @@ export const generateAdvancedPDF = (paperData: PaperData) => {
               const optionsPerRow = Math.min(validOptions.length, 4); // Max 4 columns
               const columnWidth = maxLineWidth / optionsPerRow;
 
-              let currentRow = 0;
-              let maxRowHeight = 0;
               const rowHeights: number[] = [];
 
               // First pass: calculate heights for each option

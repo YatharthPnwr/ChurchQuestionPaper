@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { generateAdvancedPDF, type PaperData } from "../utils/pdfGenerator";
 
 interface MCQQuestion {
@@ -86,7 +86,6 @@ export default function MCQGenerator() {
 
   // State for collapsible questions
   const [collapsedMCQs, setCollapsedMCQs] = useState<Set<string>>(new Set());
-  const [collapsedQAs, setCollapsedQAs] = useState<Set<string>>(new Set());
   const [collapsedMatches, setCollapsedMatches] = useState<Set<string>>(
     new Set()
   );
@@ -99,19 +98,6 @@ export default function MCQGenerator() {
         newSet.delete(questionId);
       } else {
         newSet.add(questionId);
-      }
-      return newSet;
-    });
-  };
-
-  const toggleQACollapse = (sectionId: string, questionId: string) => {
-    const key = `${sectionId}-${questionId}`;
-    setCollapsedQAs((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(key)) {
-        newSet.delete(key);
-      } else {
-        newSet.add(key);
       }
       return newSet;
     });
@@ -184,7 +170,7 @@ export default function MCQGenerator() {
     sectionId: string,
     questionId: string,
     field: keyof MCQQuestion,
-    value: any
+    value: string | [string, string, string, string]
   ) => {
     setMcqSections((prev) =>
       prev.map((section) =>
@@ -536,7 +522,7 @@ export default function MCQGenerator() {
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Top Text (e.g., "Praise the Lord!")
+                Top Text (e.g., &quot;Praise the Lord!&quot;)
               </label>
               <input
                 type="text"
@@ -551,7 +537,7 @@ export default function MCQGenerator() {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Standard/Class (e.g., "STANDARD 3")
+                Standard/Class (e.g., &quot;STANDARD 3&quot;)
               </label>
               <input
                 type="text"
@@ -569,7 +555,7 @@ export default function MCQGenerator() {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Exam Title (e.g., "ANNUAL EXAMINATION – 2021")
+                Exam Title (e.g., &quot;ANNUAL EXAMINATION – 2021&quot;)
               </label>
               <input
                 type="text"
@@ -587,7 +573,7 @@ export default function MCQGenerator() {
 
             <div>
               <label className="block text-sm font-semibold text-slate-700 mb-2">
-                Time Duration (e.g., "1½ Hours")
+                Time Duration (e.g., &quot;1½ Hours&quot;)
               </label>
               <input
                 type="text"
@@ -762,7 +748,7 @@ export default function MCQGenerator() {
 
         {/* All Sections Container - Rendered in User-Defined Order */}
         <div className="space-y-4">
-          {sectionOrder.map((item, orderIndex) => {
+          {sectionOrder.map((item) => {
             console.log("Rendering section:", item.type, "ID:", item.id);
 
             // Render MCQ Section
@@ -1871,7 +1857,8 @@ export default function MCQGenerator() {
                     Start by adding paper header information and questions
                   </p>
                   <p className="text-xs mt-2 text-purple-500">
-                    💡 Try the "Load Sample" button to see how it works!
+                    💡 Try the &quot;Load Sample&quot; button to see how it
+                    works!
                   </p>
                 </div>
               </div>

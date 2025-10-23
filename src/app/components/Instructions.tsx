@@ -28,15 +28,16 @@ export default function Instructions() {
                 institution details
               </li>
               <li>
-                Add a <strong>Section Heading</strong> (e.g., "Multiple Choice
-                Questions")
+                Add a <strong>Section Heading</strong> (e.g., &quot;Multiple
+                Choice Questions&quot;)
               </li>
               <li>
-                Enter the <strong>Marks Calculation</strong> (e.g., "25 × 2 =
-                50")
+                Enter the <strong>Marks Calculation</strong> (e.g., &quot;25 × 2
+                = 50&quot;)
               </li>
               <li>
-                Click <strong>"Add Question"</strong> to create new MCQs
+                Click <strong>&quot;Add Question&quot;</strong> to create new
+                MCQs
               </li>
               <li>
                 Fill in the question text and four options for each question
@@ -45,11 +46,11 @@ export default function Instructions() {
                 Watch the <strong>Live Preview</strong> update as you type
               </li>
               <li>
-                Use <strong>"Load Sample"</strong> to see an example
+                Use <strong>&quot;Load Sample&quot;</strong> to see an example
               </li>
               <li>
-                Click <strong>"Print"</strong> to generate a PDF or print the
-                paper
+                Click <strong>&quot;Print&quot;</strong> to generate a PDF or
+                print the paper
               </li>
             </ol>
           </div>
