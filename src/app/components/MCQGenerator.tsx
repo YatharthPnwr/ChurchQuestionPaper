@@ -46,6 +46,11 @@ interface MatchSection {
   pairs: MatchPair[];
 }
 
+interface PartSection {
+  id: string;
+  title: string; // e.g., "PART - A", "PART - B"
+}
+
 interface PaperHeader {
   title: string;
   subtitle: string;
@@ -60,10 +65,11 @@ export default function MCQGenerator() {
   const [mcqSections, setMcqSections] = useState<MCQSection[]>([]);
   const [qaSections, setQaSections] = useState<QASection[]>([]);
   const [matchSections, setMatchSections] = useState<MatchSection[]>([]);
+  const [partSections, setPartSections] = useState<PartSection[]>([]);
 
   // Section order tracking - maintains creation order
   const [sectionOrder, setSectionOrder] = useState<
-    Array<{ type: "mcq" | "qa" | "match"; id: string }>
+    Array<{ type: "mcq" | "qa" | "match" | "part"; id: string }>
   >([]);
 
   const [selectedSectionType, setSelectedSectionType] = useState<string>("");
@@ -396,6 +402,33 @@ export default function MCQGenerator() {
     );
   };
 
+  // Part Section Functions
+  const addPartSection = () => {
+    const newPart: PartSection = {
+      id: Date.now().toString(),
+      title: "PART - A",
+    };
+    setPartSections((prev) => [...prev, newPart]);
+    // Add to section order
+    setSectionOrder((prev) => [...prev, { type: "part", id: newPart.id }]);
+  };
+
+  const updatePartSection = (sectionId: string, value: string) => {
+    setPartSections((prev) =>
+      prev.map((section) =>
+        section.id === sectionId ? { ...section, title: value } : section
+      )
+    );
+  };
+
+  const removePartSection = (sectionId: string) => {
+    setPartSections((prev) =>
+      prev.filter((section) => section.id !== sectionId)
+    );
+    // Remove from section order
+    setSectionOrder((prev) => prev.filter((item) => item.id !== sectionId));
+  };
+
   // Function to create a new section based on selected type
   const handleCreateSection = () => {
     if (!selectedSectionType) {
@@ -448,6 +481,7 @@ export default function MCQGenerator() {
         mcqSections: mcqSections,
         qaSections: qaSections,
         matchSections: matchSections,
+        partSections: partSections,
         sectionOrder: sectionOrder,
       };
 
@@ -639,6 +673,7 @@ export default function MCQGenerator() {
                 setMcqSections([]);
                 setQaSections([]);
                 setMatchSections([]);
+                setPartSections([]);
                 setSectionOrder([]);
                 setSelectedSectionType("");
               }}
@@ -646,6 +681,26 @@ export default function MCQGenerator() {
               title="Clear All"
             >
               🗑️ Clear
+            </button>
+          </div>
+        </div>
+
+        {/* Add Part Divider Button */}
+        <div className="mb-6 p-5 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl shadow-sm border border-orange-200">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="text-lg font-semibold text-slate-800 mb-1">
+                📑 Part Divider
+              </h3>
+              <p className="text-sm text-slate-600">
+                Add a centered, bold part heading (e.g., PART - A, PART - B)
+              </p>
+            </div>
+            <button
+              onClick={addPartSection}
+              className="px-4 py-2.5 bg-gradient-to-r from-orange-500 to-yellow-500 hover:from-orange-600 hover:to-yellow-600 text-white rounded-lg transition-all duration-200 font-medium shadow-md"
+            >
+              ➕ Add Part
             </button>
           </div>
         </div>
@@ -1414,6 +1469,60 @@ export default function MCQGenerator() {
               );
             }
 
+            // Render Part Section
+            if (item.type === "part") {
+              const section = partSections.find((s) => s.id === item.id);
+              if (!section) return null;
+
+              return (
+                <div
+                  key={section.id}
+                  className="p-5 bg-gradient-to-br from-yellow-50 to-orange-50 rounded-xl shadow-sm border border-orange-200"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <h4 className="text-md font-semibold text-orange-800">
+                      📑 Part Divider
+                    </h4>
+                    <button
+                      onClick={() => removePartSection(section.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Part Title (e.g., PART - A, PART - B)
+                      </label>
+                      <input
+                        type="text"
+                        value={section.title}
+                        onChange={(e) =>
+                          updatePartSection(section.id, e.target.value)
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        placeholder="PART - A"
+                      />
+                    </div>
+                  </div>
+                </div>
+              );
+            }
+
             return null;
           })}
         </div>
@@ -1526,22 +1635,22 @@ export default function MCQGenerator() {
           {(paperHeader.title || paperHeader.subject) && (
             <div className="text-center mb-6 print:mb-4">
               {paperHeader.title && (
-                <div className="italic text-base mb-1 print:text-sm">
+                <div className="italic text-lg mb-2 print:text-base">
                   {paperHeader.title}
                 </div>
               )}
-              <h1 className="text-xl font-bold mb-1 print:text-lg uppercase">
+              <h1 className="text-2xl font-bold mb-2 print:text-xl uppercase">
                 THE PENTECOSTAL MISSION
               </h1>
-              <h2 className="text-base font-bold mb-1 print:text-sm uppercase">
+              <h2 className="text-lg font-bold mb-2 print:text-base uppercase">
                 SUNDAY SCHOOL CENTRAL ORGANIZATION, BARODA
               </h2>
               {paperHeader.subject && (
-                <h3 className="text-base font-bold mb-4 print:text-sm uppercase underline">
+                <h3 className="text-lg font-bold mb-4 print:text-base uppercase underline">
                   {paperHeader.subject}
                 </h3>
               )}
-              <div className="flex justify-between items-center text-sm print:text-xs font-bold pt-3">
+              <div className="flex justify-between items-center text-base print:text-sm font-bold pt-3">
                 <div>
                   {paperHeader.time && <span>Time : {paperHeader.time}</span>}
                 </div>
@@ -1714,6 +1823,20 @@ export default function MCQGenerator() {
                       ))}
                     </div>
                   )}
+                </div>
+              );
+            }
+
+            // Render Part Section Preview
+            if (item.type === "part") {
+              const section = partSections.find((s) => s.id === item.id);
+              if (!section) return null;
+
+              return (
+                <div key={section.id} className="my-6 print:my-4">
+                  <h2 className="text-center text-xl font-bold text-black print:text-lg">
+                    {section.title}
+                  </h2>
                 </div>
               );
             }

@@ -30,6 +30,11 @@ export interface MatchSection {
   pairs: MatchPair[];
 }
 
+export interface PartSection {
+  id: string;
+  title: string;
+}
+
 export interface MCQSection {
   id: string;
   sectionNumber: string; // e.g., "I", "II", "III"
@@ -56,7 +61,8 @@ export interface PaperData {
   mcqSections?: MCQSection[];
   qaSections?: QASection[];
   matchSections?: MatchSection[];
-  sectionOrder?: Array<{ type: "mcq" | "qa" | "match"; id: string }>;
+  partSections?: PartSection[];
+  sectionOrder?: Array<{ type: "mcq" | "qa" | "match" | "part"; id: string }>;
 }
 
 // export const generatePDF = async (paperData: PaperData) => {
@@ -291,7 +297,7 @@ export const generateAdvancedPDF = (paperData: PaperData) => {
     if (paperData.header.title || paperData.header.subject) {
       // "Praise the Lord!" in italic
       if (paperData.header.title) {
-        pdf.setFontSize(11);
+        pdf.setFontSize(13);
         pdf.setFont("times", "italic");
         const titleWidth = pdf.getTextWidth(paperData.header.title);
         pdf.text(
@@ -299,28 +305,28 @@ export const generateAdvancedPDF = (paperData: PaperData) => {
           (pageWidth - titleWidth) / 2,
           currentY
         );
-        currentY += 6;
+        currentY += 7;
       }
 
       // "THE PENTECOSTAL MISSION"
-      pdf.setFontSize(14);
+      pdf.setFontSize(16);
       pdf.setFont("times", "bold");
       const org1 = "THE PENTECOSTAL MISSION";
       const org1Width = pdf.getTextWidth(org1);
       pdf.text(org1, (pageWidth - org1Width) / 2, currentY);
-      currentY += 6;
+      currentY += 7;
 
       // "SUNDAY SCHOOL CENTRAL ORGANIZATION, BARODA"
-      pdf.setFontSize(11);
+      pdf.setFontSize(13);
       pdf.setFont("times", "bold");
       const org2 = "SUNDAY SCHOOL CENTRAL ORGANIZATION, BARODA";
       const org2Width = pdf.getTextWidth(org2);
       pdf.text(org2, (pageWidth - org2Width) / 2, currentY);
-      currentY += 7;
+      currentY += 8;
 
       // Subject (e.g., "ANNUAL EXAMINATION - 2021") - underlined
       if (paperData.header.subject) {
-        pdf.setFontSize(11);
+        pdf.setFontSize(13);
         pdf.setFont("times", "bold");
         const subjectWidth = pdf.getTextWidth(paperData.header.subject);
         const subjectX = (pageWidth - subjectWidth) / 2;
@@ -332,7 +338,7 @@ export const generateAdvancedPDF = (paperData: PaperData) => {
 
       // Bottom line with Time, Standard, Marks
       currentY += 6;
-      pdf.setFontSize(11);
+      pdf.setFontSize(12);
       pdf.setFont("times", "bold");
 
       // Time on the left
@@ -713,6 +719,28 @@ export const generateAdvancedPDF = (paperData: PaperData) => {
 
           // Add space after Match section
           currentY += 8;
+        }
+
+        // Render Part Section
+        if (item.type === "part") {
+          const section = paperData.partSections?.find((s) => s.id === item.id);
+          if (!section) return;
+
+          // Check if we need a new page
+          if (currentY > pageHeight - margin - 30) {
+            pdf.addPage();
+            currentY = margin;
+          }
+
+          // Part Title - centered and bold
+          pdf.setFontSize(14);
+          pdf.setFont("times", "bold");
+
+          const titleWidth = pdf.getTextWidth(section.title);
+          const centerX = (pageWidth - titleWidth) / 2;
+          pdf.text(section.title, centerX, currentY);
+
+          currentY += 10; // Space after part title
         }
       });
     }
