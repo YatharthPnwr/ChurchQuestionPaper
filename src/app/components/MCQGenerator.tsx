@@ -1,6 +1,7 @@
 "use client";
 import { useState } from "react";
 import { generateAdvancedPDF, type PaperData } from "../utils/pdfGenerator";
+import Image from "next/image";
 
 interface MCQQuestion {
   id: string;
@@ -46,6 +47,20 @@ interface MatchSection {
   pairs: MatchPair[];
 }
 
+interface MemoryVerse {
+  id: string;
+  verse: string; // e.g., "II Timothy 2:5", "Hosea 6:6"
+}
+
+interface MemoryVerseSection {
+  id: string;
+  sectionNumber: string;
+  heading: string;
+  instruction?: string;
+  marksCalculation: string;
+  verses: MemoryVerse[];
+}
+
 interface PartSection {
   id: string;
   title: string; // e.g., "PART - A", "PART - B"
@@ -65,11 +80,14 @@ export default function MCQGenerator() {
   const [mcqSections, setMcqSections] = useState<MCQSection[]>([]);
   const [qaSections, setQaSections] = useState<QASection[]>([]);
   const [matchSections, setMatchSections] = useState<MatchSection[]>([]);
+  const [memoryVerseSections, setMemoryVerseSections] = useState<
+    MemoryVerseSection[]
+  >([]);
   const [partSections, setPartSections] = useState<PartSection[]>([]);
 
   // Section order tracking - maintains creation order
   const [sectionOrder, setSectionOrder] = useState<
-    Array<{ type: "mcq" | "qa" | "match" | "part"; id: string }>
+    Array<{ type: "mcq" | "qa" | "match" | "memoryverse" | "part"; id: string }>
   >([]);
 
   const [selectedSectionType, setSelectedSectionType] = useState<string>("");
@@ -415,6 +433,90 @@ export default function MCQGenerator() {
     setSectionOrder((prev) => prev.filter((item) => item.id !== sectionId));
   };
 
+  // Memory Verse Section Functions
+  const addMemoryVerseSection = () => {
+    const newSection: MemoryVerseSection = {
+      id: Date.now().toString(),
+      sectionNumber: "",
+      heading: "Write the following memory verses",
+      instruction: "",
+      marksCalculation: "",
+      verses: [],
+    };
+    setMemoryVerseSections((prev) => [...prev, newSection]);
+    // Add to section order
+    setSectionOrder((prev) => [
+      ...prev,
+      { type: "memoryverse", id: newSection.id },
+    ]);
+  };
+
+  const updateMemoryVerseSection = (
+    sectionId: string,
+    field: keyof Omit<MemoryVerseSection, "id" | "verses">,
+    value: string
+  ) => {
+    setMemoryVerseSections((prev) =>
+      prev.map((section) =>
+        section.id === sectionId ? { ...section, [field]: value } : section
+      )
+    );
+  };
+
+  const removeMemoryVerseSection = (sectionId: string) => {
+    setMemoryVerseSections((prev) =>
+      prev.filter((section) => section.id !== sectionId)
+    );
+    // Remove from section order
+    setSectionOrder((prev) => prev.filter((item) => item.id !== sectionId));
+  };
+
+  const addMemoryVerse = (sectionId: string) => {
+    const newVerse: MemoryVerse = {
+      id: Date.now().toString(),
+      verse: "",
+    };
+    setMemoryVerseSections((prev) =>
+      prev.map((section) =>
+        section.id === sectionId
+          ? { ...section, verses: [...section.verses, newVerse] }
+          : section
+      )
+    );
+  };
+
+  const updateMemoryVerse = (
+    sectionId: string,
+    verseId: string,
+    value: string
+  ) => {
+    setMemoryVerseSections((prev) =>
+      prev.map((section) =>
+        section.id === sectionId
+          ? {
+              ...section,
+              verses: section.verses.map((verse) =>
+                verse.id === verseId ? { ...verse, verse: value } : verse
+              ),
+            }
+          : section
+      )
+    );
+  };
+
+  const removeMemoryVerse = (sectionId: string, verseId: string) => {
+    setMemoryVerseSections((prev) =>
+      prev.map((section) =>
+        section.id === sectionId
+          ? {
+              ...section,
+              verses: section.verses.filter((verse) => verse.id !== verseId),
+            }
+          : section
+      )
+    );
+  };
+
   // Function to create a new section based on selected type
   const handleCreateSection = () => {
     if (!selectedSectionType) {
@@ -433,6 +535,9 @@ export default function MCQGenerator() {
     } else if (selectedSectionType === "match") {
       console.log("Adding Match section");
       addMatchSection();
+    } else if (selectedSectionType === "memoryverse") {
+      console.log("Adding Memory Verse section");
+      addMemoryVerseSection();
     }
 
     // Reset the dropdown
@@ -467,6 +572,7 @@ export default function MCQGenerator() {
         mcqSections: mcqSections,
         qaSections: qaSections,
         matchSections: matchSections,
+        memoryVerseSections: memoryVerseSections,
         partSections: partSections,
         sectionOrder: sectionOrder,
       };
@@ -636,6 +742,9 @@ export default function MCQGenerator() {
                 <option value="match" className="text-slate-900">
                   🔗 Match and Rewrite
                 </option>
+                <option value="memoryverse" className="text-slate-900">
+                  📖 Memory Verses
+                </option>
               </select>
             </div>
             <button
@@ -659,6 +768,7 @@ export default function MCQGenerator() {
                 setMcqSections([]);
                 setQaSections([]);
                 setMatchSections([]);
+                setMemoryVerseSections([]);
                 setPartSections([]);
                 setSectionOrder([]);
                 setSelectedSectionType("");
@@ -1455,6 +1565,199 @@ export default function MCQGenerator() {
               );
             }
 
+            // Render Memory Verse Section
+            if (item.type === "memoryverse") {
+              const section = memoryVerseSections.find((s) => s.id === item.id);
+              if (!section) return null;
+
+              return (
+                <div
+                  key={section.id}
+                  className="p-5 bg-white rounded-xl shadow-sm border border-slate-200"
+                >
+                  <div className="flex justify-between items-start mb-4">
+                    <h4 className="text-md font-semibold text-purple-800">
+                      📖 Memory Verse Section
+                    </h4>
+                    <button
+                      onClick={() => removeMemoryVerseSection(section.id)}
+                      className="text-red-500 hover:text-red-700"
+                    >
+                      <svg
+                        className="w-5 h-5"
+                        fill="none"
+                        stroke="currentColor"
+                        viewBox="0 0 24 24"
+                      >
+                        <path
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                          strokeWidth={2}
+                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+
+                  <div className="space-y-4 mb-4">
+                    <div className="grid grid-cols-3 gap-4">
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Section Number
+                        </label>
+                        <input
+                          type="text"
+                          value={section.sectionNumber}
+                          onChange={(e) =>
+                            updateMemoryVerseSection(
+                              section.id,
+                              "sectionNumber",
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          placeholder="e.g., I"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Heading
+                        </label>
+                        <input
+                          type="text"
+                          value={section.heading}
+                          onChange={(e) =>
+                            updateMemoryVerseSection(
+                              section.id,
+                              "heading",
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          placeholder="e.g., Write the following memory verses"
+                        />
+                      </div>
+                      <div>
+                        <label className="block text-sm font-medium text-slate-700 mb-2">
+                          Instruction
+                        </label>
+                        <input
+                          type="text"
+                          value={section.instruction}
+                          onChange={(e) =>
+                            updateMemoryVerseSection(
+                              section.id,
+                              "instruction",
+                              e.target.value
+                            )
+                          }
+                          className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          placeholder="e.g., (Any six)"
+                        />
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-slate-700 mb-2">
+                        Marks Calculation
+                      </label>
+                      <input
+                        type="text"
+                        value={section.marksCalculation}
+                        onChange={(e) =>
+                          updateMemoryVerseSection(
+                            section.id,
+                            "marksCalculation",
+                            e.target.value
+                          )
+                        }
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                        placeholder="e.g., 10 X 3 = 30"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-3">
+                    <div className="flex justify-between items-center">
+                      <h5 className="text-sm font-semibold text-slate-700">
+                        Memory Verses
+                      </h5>
+                      <button
+                        onClick={() => addMemoryVerse(section.id)}
+                        className="px-3 py-1.5 bg-purple-500 text-white rounded-md hover:bg-purple-600 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:ring-offset-2 transition-colors text-sm flex items-center space-x-1"
+                      >
+                        <svg
+                          className="w-4 h-4"
+                          fill="none"
+                          stroke="currentColor"
+                          viewBox="0 0 24 24"
+                        >
+                          <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            strokeWidth={2}
+                            d="M12 4v16m8-8H4"
+                          />
+                        </svg>
+                        <span>Add Verse</span>
+                      </button>
+                    </div>
+
+                    {section.verses.map((verse, index) => (
+                      <div
+                        key={verse.id}
+                        className="flex items-center space-x-3 p-3 bg-gray-50 rounded-lg"
+                      >
+                        <span className="font-semibold text-slate-600 min-w-[30px]">
+                          {index + 1}.
+                        </span>
+                        <input
+                          type="text"
+                          value={verse.verse}
+                          onChange={(e) =>
+                            updateMemoryVerse(
+                              section.id,
+                              verse.id,
+                              e.target.value
+                            )
+                          }
+                          className="flex-1 px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                          placeholder="e.g., II Timothy 2:5"
+                        />
+                        <button
+                          onClick={() =>
+                            removeMemoryVerse(section.id, verse.id)
+                          }
+                          className="text-red-500 hover:text-red-700"
+                        >
+                          <svg
+                            className="w-5 h-5"
+                            fill="none"
+                            stroke="currentColor"
+                            viewBox="0 0 24 24"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              strokeWidth={2}
+                              d="M6 18L18 6M6 6l12 12"
+                            />
+                          </svg>
+                        </button>
+                      </div>
+                    ))}
+
+                    {section.verses.length === 0 && (
+                      <div className="text-center py-4 text-slate-600 text-sm">
+                        No verses added yet. Click &quot;Add Verse&quot; to get
+                        started.
+                      </div>
+                    )}
+                  </div>
+                </div>
+              );
+            }
+
             // Render Part Section
             if (item.type === "part") {
               const section = partSections.find((s) => s.id === item.id);
@@ -1500,7 +1803,7 @@ export default function MCQGenerator() {
                         onChange={(e) =>
                           updatePartSection(section.id, e.target.value)
                         }
-                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                        className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent text-black"
                         placeholder="PART - A"
                       />
                     </div>
@@ -1625,10 +1928,10 @@ export default function MCQGenerator() {
                   {paperHeader.title}
                 </div>
               )}
-              <h1 className="text-2xl font-bold mb-2 print:text-xl uppercase">
+              <h1 className="text-xl font-normal mb-2 print:text-xl uppercase">
                 THE PENTECOSTAL MISSION
               </h1>
-              <h2 className="text-lg font-bold mb-2 print:text-base uppercase">
+              <h2 className="text-xl font-normal mb-2 print:text-lg uppercase">
                 SUNDAY SCHOOL CENTRAL ORGANIZATION, BARODA
               </h2>
               {paperHeader.subject && (
@@ -1813,6 +2116,44 @@ export default function MCQGenerator() {
               );
             }
 
+            // Render Memory Verse Section Preview
+            if (item.type === "memoryverse") {
+              const section = memoryVerseSections.find((s) => s.id === item.id);
+              if (!section) return null;
+
+              return (
+                <div key={section.id} className="mb-3 print:mb-2">
+                  <div className="flex justify-between items-start mb-1">
+                    <h3 className="text-xl font-bold text-black print:text-lg">
+                      {section.sectionNumber && `${section.sectionNumber}. `}
+                      {section.heading}
+                      {section.instruction && ` ${section.instruction}`}
+                    </h3>
+                    {section.marksCalculation && (
+                      <div className="marks-box text-right font-medium text-black print:text-sm">
+                        {section.marksCalculation}
+                      </div>
+                    )}
+                  </div>
+
+                  {section.verses.length > 0 && (
+                    <div className="grid grid-cols-4 gap-x-8 gap-y-1">
+                      {section.verses.map((verse, index) => (
+                        <div key={verse.id} className="flex items-start">
+                          <span className="question-number flex-shrink-0 font-bold">
+                            {index + 1}.
+                          </span>
+                          <span className="flex-1 text-black leading-relaxed print:leading-normal ml-1">
+                            {verse.verse}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            }
+
             // Render Part Section Preview
             if (item.type === "part") {
               const section = partSections.find((s) => s.id === item.id);
@@ -1829,6 +2170,24 @@ export default function MCQGenerator() {
 
             return null;
           })}
+
+          {/* Decorative design at the end of paper */}
+          {(paperHeader.title ||
+            paperHeader.subject ||
+            mcqSections.length > 0 ||
+            qaSections.length > 0 ||
+            matchSections.length > 0 ||
+            memoryVerseSections.length > 0) && (
+            <div className="mt-8 flex justify-center">
+              <Image
+                src="/image.png"
+                alt="Decorative design"
+                width={200}
+                height={50}
+                className="h-4 w-auto print:h-3"
+              />
+            </div>
+          )}
 
           {!paperHeader.title &&
             !paperHeader.subject &&

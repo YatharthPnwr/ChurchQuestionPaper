@@ -34,6 +34,20 @@ export interface PartSection {
   title: string;
 }
 
+export interface MemoryVerse {
+  id: string;
+  verse: string;
+}
+
+export interface MemoryVerseSection {
+  id: string;
+  sectionNumber: string;
+  heading: string;
+  instruction?: string;
+  marksCalculation: string;
+  verses: MemoryVerse[];
+}
+
 export interface MCQSection {
   id: string;
   sectionNumber: string; // e.g., "I", "II", "III"
@@ -60,8 +74,12 @@ export interface PaperData {
   mcqSections?: MCQSection[];
   qaSections?: QASection[];
   matchSections?: MatchSection[];
+  memoryVerseSections?: MemoryVerseSection[];
   partSections?: PartSection[];
-  sectionOrder?: Array<{ type: "mcq" | "qa" | "match" | "part"; id: string }>;
+  sectionOrder?: Array<{
+    type: "mcq" | "qa" | "match" | "memoryverse" | "part";
+    id: string;
+  }>;
 }
 
 // export const generatePDF = async (paperData: PaperData) => {
@@ -255,7 +273,7 @@ export interface PaperData {
 //   }
 // };
 
-export const generateAdvancedPDF = (paperData: PaperData) => {
+export const generateAdvancedPDF = async (paperData: PaperData) => {
   try {
     const pdf = new jsPDF("p", "mm", "a4");
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -282,17 +300,17 @@ export const generateAdvancedPDF = (paperData: PaperData) => {
         currentY += 7;
       }
 
-      // "THE PENTECOSTAL MISSION"
+      // "THE PENTECOSTAL MISSION" - not bold
       pdf.setFontSize(16);
-      pdf.setFont("times", "bold");
+      pdf.setFont("times", "normal");
       const org1 = "THE PENTECOSTAL MISSION";
       const org1Width = pdf.getTextWidth(org1);
       pdf.text(org1, (pageWidth - org1Width) / 2, currentY);
       currentY += 7;
 
-      // "SUNDAY SCHOOL CENTRAL ORGANIZATION, BARODA"
-      pdf.setFontSize(13);
-      pdf.setFont("times", "bold");
+      // "SUNDAY SCHOOL CENTRAL ORGANIZATION, BARODA" - larger and not bold
+      pdf.setFontSize(14);
+      pdf.setFont("times", "normal");
       const org2 = "SUNDAY SCHOOL CENTRAL ORGANIZATION, BARODA";
       const org2Width = pdf.getTextWidth(org2);
       pdf.text(org2, (pageWidth - org2Width) / 2, currentY);
@@ -302,9 +320,10 @@ export const generateAdvancedPDF = (paperData: PaperData) => {
       if (paperData.header.subject) {
         pdf.setFontSize(13);
         pdf.setFont("times", "bold");
-        const subjectWidth = pdf.getTextWidth(paperData.header.subject);
+        const subjectUpperCase = paperData.header.subject.toUpperCase();
+        const subjectWidth = pdf.getTextWidth(subjectUpperCase);
         const subjectX = (pageWidth - subjectWidth) / 2;
-        pdf.text(paperData.header.subject, subjectX, currentY);
+        pdf.text(subjectUpperCase, subjectX, currentY);
         // Draw underline
         pdf.line(subjectX, currentY + 1, subjectX + subjectWidth, currentY + 1);
         currentY += 10;
@@ -693,6 +712,95 @@ export const generateAdvancedPDF = (paperData: PaperData) => {
           currentY += 8;
         }
 
+        // Render Memory Verse Section
+        if (item.type === "memoryverse") {
+          const section = paperData.memoryVerseSections?.find(
+            (s) => s.id === item.id
+          );
+          if (!section) return;
+
+          // Check if we need a new page
+          if (currentY > pageHeight - margin - 50) {
+            pdf.addPage();
+            currentY = margin;
+          }
+
+          // Memory Verse Section Header
+          pdf.setFontSize(14);
+          pdf.setFont("times", "bold");
+
+          const sectionTitle =
+            (section.sectionNumber ? `${section.sectionNumber}. ` : "") +
+            section.heading +
+            (section.instruction ? ` ${section.instruction}` : "");
+
+          pdf.text(sectionTitle, margin, currentY);
+
+          if (section.marksCalculation) {
+            const marksWidth = pdf.getTextWidth(section.marksCalculation);
+            pdf.text(
+              section.marksCalculation,
+              pageWidth - margin - marksWidth,
+              currentY
+            );
+          }
+
+          currentY += 8;
+
+          // Memory Verses - Grid Layout (4 columns)
+          if (section.verses.length > 0) {
+            pdf.setFontSize(12);
+
+            const versesPerRow = 4;
+            const columnWidth = usableWidth / versesPerRow;
+
+            section.verses.forEach((verse, index) => {
+              if (!verse.verse.trim()) return;
+
+              const col = index % versesPerRow;
+              const row = Math.floor(index / versesPerRow);
+
+              // Check if we need a new page for a new row
+              if (col === 0 && currentY > pageHeight - margin - 10) {
+                pdf.addPage();
+                currentY = margin;
+              }
+
+              const xPos = margin + col * columnWidth;
+              const yPos = currentY + row * 6;
+
+              // Verse number (bold) and reference (normal)
+              const verseNumber = `${index + 1}.`;
+              const verseReference = verse.verse;
+
+              // Render number in bold
+              pdf.setFont("times", "bold");
+              pdf.text(verseNumber, xPos, yPos);
+
+              // Calculate width of the number to position the reference text
+              const numberWidth = pdf.getTextWidth(verseNumber + " ");
+
+              // Render reference in normal font
+              pdf.setFont("times", "normal");
+              const verseLines = pdf.splitTextToSize(
+                verseReference,
+                columnWidth - numberWidth - 5
+              );
+
+              verseLines.forEach((line: string, lineIndex: number) => {
+                pdf.text(line, xPos + numberWidth, yPos + lineIndex * 5);
+              });
+            });
+
+            // Move to next line after all verses
+            const totalRows = Math.ceil(section.verses.length / versesPerRow);
+            currentY += totalRows * 6 + 6; // Add spacing after verses
+          }
+
+          // Add space after Memory Verse section
+          currentY += 2;
+        }
+
         // Render Part Section
         if (item.type === "part") {
           const section = paperData.partSections?.find((s) => s.id === item.id);
@@ -715,6 +823,43 @@ export const generateAdvancedPDF = (paperData: PaperData) => {
           currentY += 10; // Space after part title
         }
       });
+    }
+
+    // Add decorative design at the end of the paper
+    if (currentY > margin) {
+      // Add some space before the design
+      currentY += 15;
+
+      // Check if we need a new page
+      if (currentY > pageHeight - margin - 20) {
+        pdf.addPage();
+        currentY = margin + 15;
+      }
+
+      // Add the decorative image
+      try {
+        const imgPath = "/image.png";
+
+        // Load image as blob and convert to base64
+        const response = await fetch(imgPath);
+        const blob = await response.blob();
+        const imgData = await new Promise<string>((resolve, reject) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result as string);
+          reader.onerror = reject;
+          reader.readAsDataURL(blob);
+        });
+
+        // Calculate dimensions to center the image (slightly bigger)
+        const imgWidth = 30; // Width in mm (increased from 25)
+        const imgHeight = 5.5; // Height in mm (increased from 4.5)
+        const centerX = (pageWidth - imgWidth) / 2;
+
+        pdf.addImage(imgData, "PNG", centerX, currentY, imgWidth, imgHeight);
+      } catch (error) {
+        console.error("Error loading decorative image:", error);
+        // Continue without image if there's an error
+      }
     }
 
     // Generate filename
